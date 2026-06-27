@@ -1,26 +1,29 @@
 import { ProfileUI } from '@ui-pages';
-import { FC, SyntheticEvent, useEffect, useState } from 'react';
+import { FC, SyntheticEvent, useEffect, useState, useRef } from 'react';
+import { useDispatch, useSelector } from '../../services/store';
+import { selectUser, updateUser } from '../../services/slices/userSlice';
 
 export const Profile: FC = () => {
-  /** TODO: взять переменную из стора */
-  const user = {
-    name: '',
-    email: ''
-  };
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
 
   const [formValue, setFormValue] = useState({
-    name: user.name,
-    email: user.email,
+    name: user?.name || '',
+    email: user?.email || '',
     password: ''
   });
+  console.log(formValue.email);
+  console.log(formValue.password);
 
   useEffect(() => {
-    setFormValue((prevState) => ({
-      ...prevState,
-      name: user?.name || '',
-      email: user?.email || ''
-    }));
-  }, [user]);
+    if (!user) return;
+
+    setFormValue({
+      name: user.name,
+      email: user.email,
+      password: ''
+    });
+  }, [user?.name, user?.email]);
 
   const isFormChanged =
     formValue.name !== user?.name ||
@@ -29,13 +32,33 @@ export const Profile: FC = () => {
 
   const handleSubmit = (e: SyntheticEvent) => {
     e.preventDefault();
+
+    try {
+      const updateData: { name: string; email: string; password?: string } = {
+        name: formValue.name,
+        email: formValue.email
+      };
+
+      if (formValue.password) {
+        updateData.password = formValue.password;
+      }
+
+      dispatch(updateUser(updateData)).unwrap();
+
+      setFormValue((prevState) => ({
+        ...prevState,
+        password: ''
+      }));
+    } catch (error) {
+      console.error('Ошибка при обновлении данных:', error);
+    }
   };
 
   const handleCancel = (e: SyntheticEvent) => {
     e.preventDefault();
     setFormValue({
-      name: user.name,
-      email: user.email,
+      name: user?.name || '',
+      email: user?.email || '',
       password: ''
     });
   };
@@ -45,6 +68,8 @@ export const Profile: FC = () => {
       ...prevState,
       [e.target.name]: e.target.value
     }));
+    console.log(e.target.name);
+    console.log(formValue.password);
   };
 
   return (
@@ -56,6 +81,4 @@ export const Profile: FC = () => {
       handleInputChange={handleInputChange}
     />
   );
-
-  return null;
 };
