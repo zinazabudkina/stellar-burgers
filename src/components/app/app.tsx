@@ -27,38 +27,41 @@ import {
 } from '../../services/slices/ingredientsSlice';
 import {
   fetchUser,
-  selectIsAuth,
+  selectUser,
   selectAuthChecked
 } from '../../services/slices/userSlice';
 import { useDispatch, useSelector } from '../../services/store';
 import { useEffect } from 'react';
 import { Navigate } from 'react-router-dom';
 
-type PrivateRouteProps = {
+type ProtectedRouteProps = {
+  onlyUnAuth?: boolean;
   children: React.ReactElement;
 };
 
-const PrivateRoute = ({ children }: PrivateRouteProps) => {
-  const isAuth = useSelector(selectIsAuth);
-  console.log(isAuth);
+export const ProtectedRoute = ({
+  onlyUnAuth,
+  children
+}: ProtectedRouteProps) => {
   const isAuthChecked = useSelector(selectAuthChecked);
-  console.log(isAuthChecked);
+  const user = useSelector(selectUser);
+  const location = useLocation();
 
-  if (!isAuthChecked) return <Preloader />;
-  return isAuth ? children : <Navigate to='/login' replace />;
-};
+  if (!isAuthChecked) {
+    return <Preloader />;
+  }
 
-type PublicRouteProps = {
-  children: React.ReactElement;
-};
+  if (!onlyUnAuth && !user) {
+    return <Navigate to='/login' replace state={{ from: location }} />;
+  }
 
-const PublicRoute = ({ children }: PublicRouteProps) => {
-  const isAuth = useSelector(selectIsAuth);
-  const isAuthChecked = useSelector(selectAuthChecked);
+  if (onlyUnAuth && user) {
+    const from = location.state?.from || { pathname: '/' };
 
-  if (!isAuthChecked) return <Preloader />;
+    return <Navigate to={from} replace />;
+  }
 
-  return !isAuth ? children : <Navigate to='/' replace />;
+  return children;
 };
 
 const App = () => {
@@ -108,7 +111,14 @@ const App = () => {
 
             <Route path='/feed' element={<Feed />} />
             <Route path='/feed/:number' element={<OrderInfoPage />} />
-            <Route path='/profile/orders/:number' element={<OrderInfoPage />} />
+            <Route
+              path='/profile/orders/:number'
+              element={
+                <ProtectedRoute>
+                  <OrderInfoPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path='/ingredients/:id'
               element={<IngredientDetailsPage />}
@@ -116,54 +126,54 @@ const App = () => {
             <Route
               path='/login'
               element={
-                <PublicRoute>
+                <ProtectedRoute onlyUnAuth>
                   <Login />
-                </PublicRoute>
+                </ProtectedRoute>
               }
             />
 
             <Route
               path='/register'
               element={
-                <PublicRoute>
+                <ProtectedRoute onlyUnAuth>
                   <Register />
-                </PublicRoute>
+                </ProtectedRoute>
               }
             />
 
             <Route
               path='/forgot-password'
               element={
-                <PublicRoute>
+                <ProtectedRoute onlyUnAuth>
                   <ForgotPassword />
-                </PublicRoute>
+                </ProtectedRoute>
               }
             />
 
             <Route
               path='/reset-password'
               element={
-                <PublicRoute>
+                <ProtectedRoute onlyUnAuth>
                   <ResetPassword />
-                </PublicRoute>
+                </ProtectedRoute>
               }
             />
 
             <Route
               path='/profile'
               element={
-                <PrivateRoute>
+                <ProtectedRoute>
                   <Profile />
-                </PrivateRoute>
+                </ProtectedRoute>
               }
             />
 
             <Route
               path='/profile/orders'
               element={
-                <PrivateRoute>
+                <ProtectedRoute>
                   <ProfileOrders />
-                </PrivateRoute>
+                </ProtectedRoute>
               }
             />
 
@@ -190,9 +200,9 @@ const App = () => {
               <Route
                 path='/profile/orders/:number'
                 element={
-                  <PrivateRoute>
+                  <ProtectedRoute>
                     <OrderModal onClose={handleClose} />
-                  </PrivateRoute>
+                  </ProtectedRoute>
                 }
               />
             </Routes>

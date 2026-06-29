@@ -13,7 +13,6 @@ import {
   selectOrderLoading,
   clearOrder
 } from '../../services/slices/orderSlice';
-import { clearConstructor } from '../../services/slices/constructorSlice';
 import { selectIsAuth } from '../../services/slices/userSlice';
 
 export const BurgerConstructor: FC = () => {
@@ -35,7 +34,7 @@ export const BurgerConstructor: FC = () => {
   const onOrderClick = () => {
     if (!isAuth) {
       navigate('/login', {
-        state: { from: '/profile' }
+        state: { from: '/' }
       });
       return;
     }
@@ -50,7 +49,6 @@ export const BurgerConstructor: FC = () => {
     dispatch(createOrder(ingredientIds));
   };
   const closeOrderModal = () => {
-    dispatch(clearConstructor());
     dispatch(clearOrder());
   };
 

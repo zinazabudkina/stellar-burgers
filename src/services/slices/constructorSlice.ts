@@ -20,11 +20,16 @@ export const constructorSlice = createSlice({
       state.bun = action.payload;
     },
 
-    addIngredient(state, action: PayloadAction<TIngredient>) {
-      state.ingredients.push({
-        ...action.payload,
-        id: nanoid()
-      });
+    addIngredient: {
+      reducer: (state, action: PayloadAction<TConstructorIngredient>) => {
+        state.ingredients.push(action.payload);
+      },
+      prepare: (ingredient: TIngredient) => ({
+        payload: {
+          ...ingredient,
+          id: nanoid()
+        }
+      })
     },
 
     moveIngredient(

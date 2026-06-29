@@ -2,11 +2,13 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { orderBurgerApi, getOrderByNumberApi } from '../../utils/burger-api';
 import { TOrder } from '@utils-types';
 import { RootState } from '../store';
+import { clearConstructor } from './constructorSlice';
 
 export const createOrder = createAsyncThunk(
   'order/createOrder',
-  async (ingredients: string[]) => {
+  async (ingredients: string[], { dispatch }) => {
     const response = await orderBurgerApi(ingredients);
+    dispatch(clearConstructor());
 
     return {
       ...response,
@@ -59,7 +61,6 @@ export const orderSlice = createSlice({
       .addCase(createOrder.fulfilled, (state, action) => {
         state.loading = false;
 
-        // приводим к TOrder
         state.order = {
           ...action.payload.order,
           ingredients: action.payload.ingredients
