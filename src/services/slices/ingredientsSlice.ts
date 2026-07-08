@@ -49,3 +49,5 @@ export const getIngredientsLoading = (state: RootState) =>
   state.ingredients.loading;
 export const getIngredientsError = (state: RootState) =>
   state.ingredients.error;
+
+export default ingredientsSlice.reducer;
