@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('тестируем конструктор бургера', () => {
   test.beforeEach(async ({ page }) => {
     await page.routeFromHAR('./tests/hars/ingredients.har', {
-      url: '**/ /*api/ingredients',
+      url: '**/api/ingredients',
       update: false
     });
 
@@ -33,12 +33,21 @@ test.describe('тестируем конструктор бургера', () => 
   test('открытие и закрытие модалки ингредиента по клику на кнопку', async ({
     page
   }) => {
-    const ingredient = page.getByText('Соус Spicy-X');
+    const ingredient = page
+      .getByTestId('ingredient')
+      .filter({ hasText: 'Соус Spicy-X' })
+      .first();
 
     await ingredient.click();
 
     const modal = page.getByTestId('modal');
     await expect(modal).toBeVisible();
+
+    await expect(page.getByTestId('ingredient-name')).toContainText(
+      'Соус Spicy-X'
+    );
+
+    await expect(page.getByTestId('calories')).toContainText('30');
 
     await page.getByTestId('modal-close').click();
 
@@ -46,7 +55,10 @@ test.describe('тестируем конструктор бургера', () => 
   });
 
   test('закрытие модалки по overlay', async ({ page }) => {
-    const ingredient = page.getByText('Соус Spicy-X');
+    const ingredient = page
+      .getByTestId('ingredient')
+      .filter({ hasText: 'Соус Spicy-X' })
+      .first();
 
     await ingredient.click();
 
@@ -137,9 +149,9 @@ test.describe('тестируем конструктор бургера', () => 
     await page.getByTestId('modal-close').click();
     await expect(modal).not.toBeVisible();
 
-    await expect(page.getByTestId('constructor-bun-top')).not.toBeVisible();
-    await expect(page.getByTestId('constructor-bun-bottom')).not.toBeVisible();
-    await expect(page.getByTestId('constructor-ingredients')).not.toBeVisible();
+    await expect(page.getByTestId('bun-top')).not.toBeVisible();
+    await expect(page.getByTestId('bun-bottom')).not.toBeVisible();
+    await expect(page.getByTestId('choosed-ingredients')).not.toBeVisible();
 
     await context.clearCookies();
     await page.evaluate(() => localStorage.clear());
